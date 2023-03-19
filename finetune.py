@@ -7,9 +7,7 @@ import bitsandbytes as bnb
 from datasets import load_dataset
 import transformers
 
-assert (
-    "LlamaTokenizer" in transformers._import_structure["models.llama"]
-), "LLaMA is now in HuggingFace's main branch.\nPlease reinstall it: pip uninstall transformers && pip install git+https://github.com/huggingface/transformers.git"
+
 from transformers import LlamaForCausalLM, LlamaTokenizer
 from peft import (
     prepare_model_for_int8_training,
@@ -19,8 +17,8 @@ from peft import (
 )
 
 
-# optimized for RTX 4090. for larger GPUs, increase some of these?
-MICRO_BATCH_SIZE = 4  # this could actually be 5 but i like powers of 2
+# adapted for 1xA100 80GB
+MICRO_BATCH_SIZE = 6  
 BATCH_SIZE = 128
 GRADIENT_ACCUMULATION_STEPS = BATCH_SIZE // MICRO_BATCH_SIZE
 EPOCHS = 3  # we don't always need 3 tbh
@@ -30,19 +28,22 @@ LORA_R = 8
 LORA_ALPHA = 16
 LORA_DROPOUT = 0.05
 VAL_SET_SIZE = 2000
+# To test everything works, use a smaller dataset 
+# VAL_SET_SIZE = 10
 TARGET_MODULES = [
     "q_proj",
     "v_proj",
 ]
-DATA_PATH = "alpaca_data_cleaned.json"
+DATA_PATH = "alpaca_data.json"
+# DATA_PATH = "small_alpaca.json"
 
 model = LlamaForCausalLM.from_pretrained(
-    "decapoda-research/llama-7b-hf",
+    "decapoda-research/llama-30b-hf",
     load_in_8bit=True,
     device_map="auto",
 )
 tokenizer = LlamaTokenizer.from_pretrained(
-    "decapoda-research/llama-7b-hf", add_eos_token=True
+    "decapoda-research/llama-30b-hf", add_eos_token=True
 )
 
 model = prepare_model_for_int8_training(model)
@@ -124,6 +125,7 @@ trainer = transformers.Trainer(
         eval_steps=200,
         save_steps=200,
         output_dir="lora-alpaca",
+        report_to="wandb",
         save_total_limit=3,
         load_best_model_at_end=True,
     ),
