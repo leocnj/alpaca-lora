@@ -9,7 +9,8 @@ python finetune.py
     --batch_size=128 \
     --lr=3e-4 \
     --epochs=3 \
-    --output_dir="lora-alpaca"
+    --output_dir="lora-alpaca" \
+    --model_pretrained_name="decapoda-research/llama-30b-hf"
 ```
 
 Your data must be structured similar to the alpaca dataset (and in JSONL format). An example can be found [here](https://github.com/gururise/alpaca-lora/blob/992a3be8ab4dcde90d7d67d65b1f177fa7e2b5ac/alpaca_data.json). 
