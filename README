@@ -2,10 +2,13 @@ Thank you @tloen for a wonderful repo.
 
 To run fine-tuning in this repo, you can run:
 
-python finetune.py --data_path="path/to/your/data"
+    python finetune.py --data_path="path/to/your/data"
 
-To run generation in this repo, you can run:
+To run Alpaca-30B interactively in this repo, you can run:
 
-python generate.py 
+    python generate.py 
 
+To run Alpaca-7B, you can run
+
+    python generate.py --path_to_lora_adapters="tloen/alpaca-lora-7b" --pretrained_model="decapoda-research/llama-7b-hf"
 
