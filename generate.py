@@ -1,60 +1,23 @@
+import argparse
 import torch
 from peft import PeftModel
 import transformers
-import gradio as gr
-
-assert (
-    "LlamaTokenizer" in transformers._import_structure["models.llama"]
-), "LLaMA is now in HuggingFace's main branch.\nPlease reinstall it: pip uninstall transformers && pip install git+https://github.com/huggingface/transformers.git"
 from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
 
-tokenizer = LlamaTokenizer.from_pretrained("decapoda-research/llama-7b-hf")
-
-if torch.cuda.is_available():
-    device = "cuda"
-else:
-    device = "cpu"
-
-try:
-    if torch.backends.mps.is_available():
-        device = "mps"
-except:
-    pass
-
-if device == "cuda":
+def load(pretrained_model, path_to_lora_adapters):
+    tokenizer = LlamaTokenizer.from_pretrained(pretrained_model)
     model = LlamaForCausalLM.from_pretrained(
-        "decapoda-research/llama-7b-hf",
+        pretrained_model,
         load_in_8bit=True,
         torch_dtype=torch.float16,
         device_map="auto",
     )
     model = PeftModel.from_pretrained(
-        model, "tloen/alpaca-lora-7b",
+        model, 
+        path_to_lora_adapters,
         torch_dtype=torch.float16
     )
-elif device == "mps":
-    model = LlamaForCausalLM.from_pretrained(
-        "decapoda-research/llama-7b-hf",
-        device_map={"": device},
-        torch_dtype=torch.float16,
-    )
-    model = PeftModel.from_pretrained(
-        model,
-        "tloen/alpaca-lora-7b",
-        device_map={"": device},
-        torch_dtype=torch.float16,
-    )
-else:
-    model = LlamaForCausalLM.from_pretrained(
-        "decapoda-research/llama-7b-hf",
-        device_map={"": device},
-        low_cpu_mem_usage=True
-    )
-    model = PeftModel.from_pretrained(
-        model,
-        "tloen/alpaca-lora-7b",
-        device_map={"": device},
-    )
+    return model, tokenizer
 
 def generate_prompt(instruction, input=None):
     if input:
@@ -75,11 +38,9 @@ def generate_prompt(instruction, input=None):
 
 ### Response:"""
 
-
-model.eval()
-
-
 def evaluate(
+        model, 
+        tokenizer,
         instruction,
         input=None,
         temperature=0.1,
@@ -110,48 +71,20 @@ def evaluate(
     output = tokenizer.decode(s)
     return output.split("### Response:")[1].strip()
 
-
-gr.Interface(
-    fn=evaluate,
-    inputs=[
-        gr.components.Textbox(
-            lines=2, label="Instruction", placeholder="Tell me about alpacas."
-        ),
-        gr.components.Textbox(
-            lines=2, label="Input", placeholder="none"
-        ),
-        gr.components.Slider(minimum=0, maximum=1, value=0.1, label="Temperature"),
-        gr.components.Slider(minimum=0, maximum=1, value=0.75, label="Top p"),
-        gr.components.Slider(minimum=0, maximum=100, step=1, value=40, label="Top k"),
-        gr.components.Slider(minimum=1, maximum=4, step=1, value=4, label="Beams"),
-    ],
-    outputs=[
-        gr.inputs.Textbox(
-            lines=5,
-            label="Output",
-        )
-    ],
-    title="🦙🌲 Alpaca-LoRA",
-    description="Alpaca-LoRA is a 7B-parameter LLaMA model finetuned to follow instructions. It is trained on the [Stanford Alpaca](https://github.com/tatsu-lab/stanford_alpaca) dataset and makes use of the Huggingface LLaMA implementation. For more information, please visit [the project's website](https://github.com/tloen/alpaca-lora).",
-).launch(share=True)
-
-# Old testing code follows.
-
-"""
 if __name__ == "__main__":
-    # testing code for readme
-    for instruction in [
-        "Tell me about alpacas.",
-        "Tell me about the president of Mexico in 2019.",
-        "Tell me about the king of France in 2019.",
-        "List all Canadian provinces in alphabetical order.",
-        "Write a Python program that prints the first 10 Fibonacci numbers.",
-        "Write a program that prints the numbers from 1 to 100. But for multiples of three print 'Fizz' instead of the number and for the multiples of five print 'Buzz'. For numbers which are multiples of both three and five print 'FizzBuzz'.",
-        "Tell me five words that rhyme with 'shock'.",
-        "Translate the sentence 'I have no mouth but I must scream' into Spanish.",
-        "Count up from 1 to 500.",
-    ]:
-        print("Instruction:", instruction)
-        print("Response:", evaluate(instruction))
-        print()
-"""
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--path_to_lora_adapters", type=str, default="baseten/alpaca-30b")
+    parser.add_argument("--pretrained_model", type=str, default="decapoda-research/llama-30b-hf")
+    args = parser.parse_args()
+    
+    model, tokenizer = load(args.pretrained_model, args.path_to_lora_adapters) # load model and tokenizer
+    model.eval()
+    
+    # Setup input loop for user to type in instruction, recieve a response, and continue unless they type quit or exit
+    input = ""
+    while input != "quit" and input != "exit":
+        input = input("Instruction: ")
+        if input != "quit" and input != "exit":
+            print(evaluate(model, tokenizer, input))
+        else:
+            break
