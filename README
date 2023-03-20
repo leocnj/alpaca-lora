@@ -1,0 +1,11 @@
+Thank you @tloen for a wonderful repo. 
+
+To run fine-tuning in this repo, you can run:
+
+python finetune.py --data_path="path/to/your/data"
+
+To run generation in this repo, you can run:
+
+python generate.py 
+
+
