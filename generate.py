@@ -82,6 +82,7 @@ if __name__ == "__main__":
     
     # Setup input loop for user to type in instruction, recieve a response, and continue unless they type quit or exit
     input = ""
+    print("Type quit or exit to exit this loop")
     while input != "quit" and input != "exit":
         input = input("Instruction: ")
         if input != "quit" and input != "exit":
