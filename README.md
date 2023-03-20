@@ -7,7 +7,7 @@ pip install -r requirements.txt
 ### Finetuning
 To run fine-tuning in this repo, you can run:
 ```
-python finetune.py 
+python finetune.py \
     --data_path="path/to/your/data" \
     --micro_batch_size=8 \
     --batch_size=128 \
@@ -28,7 +28,7 @@ python generate.py
 
 To run other versions of Alpaca (for example, the 7B), you can run:
 ```
-python generate.py 
+python generate.py \
     --path_to_lora_adapters="tloen/alpaca-lora-7b" \
     --pretrained_model="decapoda-research/llama-7b-hf" \
 ```
