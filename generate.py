@@ -51,7 +51,7 @@ def evaluate(
 ):
     prompt = generate_prompt(instruction, input)
     inputs = tokenizer(prompt, return_tensors="pt")
-    input_ids = inputs["input_ids"].to(device)
+    input_ids = inputs["input_ids"].to("cuda")
     generation_config = GenerationConfig(
         temperature=temperature,
         top_p=top_p,
@@ -81,11 +81,11 @@ if __name__ == "__main__":
     model.eval()
     
     # Setup input loop for user to type in instruction, recieve a response, and continue unless they type quit or exit
-    input = ""
+    input_str = ""
     print("Type quit or exit to exit this loop")
-    while input != "quit" and input != "exit":
-        input = input("Instruction: ")
-        if input != "quit" and input != "exit":
-            print(evaluate(model, tokenizer, input))
+    while input_str != "quit" and input_str != "exit":
+        input_str = input("Instruction: ")
+        if input_str != "quit" and input_str != "exit":
+            print(evaluate(model, tokenizer, input_str))
         else:
             break
