@@ -49,7 +49,10 @@ def evaluate(
         num_beams=4,
         **kwargs,
 ):
-    prompt = generate_prompt(instruction, input)
+    prompt = generate_prompt(
+        instruction, 
+        input if input != "" else None
+    )
     inputs = tokenizer(prompt, return_tensors="pt")
     input_ids = inputs["input_ids"].to("cuda")
     generation_config = GenerationConfig(
@@ -66,6 +69,7 @@ def evaluate(
             return_dict_in_generate=True,
             output_scores=True,
             max_new_tokens=2048,
+            early_stopping=True,
         )
     s = generation_output.sequences[0]
     output = tokenizer.decode(s)
@@ -84,8 +88,9 @@ if __name__ == "__main__":
     input_str = ""
     print("Type quit or exit to exit this loop")
     while input_str != "quit" and input_str != "exit":
-        input_str = input("Instruction: ")
-        if input_str != "quit" and input_str != "exit":
-            print(evaluate(model, tokenizer, input_str))
+        instruction_str = input("Instruction: ")
+        input_str = input("Input (optional): ")
+        if not any(s in ("quit", "exit") for s in (input_str, instruction_str)):
+            print(evaluate(model, tokenizer, instruction_str, input_str))
         else:
             break
