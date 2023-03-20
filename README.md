@@ -29,4 +29,4 @@ python generate.py
 ```
 
 ### Kudos 
-Thank you @tloen for a wonderful repo. 
+Thank you @tloen for the intial version of this repo which I forked and made some small changes too [here](https://github.com/tloen/alpaca-lora).
