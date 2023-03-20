@@ -1,5 +1,9 @@
 
 ## Alpaca-Lora
+### Installation
+```
+pip install -r requirements.txt
+```
 ### Finetuning
 To run fine-tuning in this repo, you can run:
 ```
