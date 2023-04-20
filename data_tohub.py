@@ -12,7 +12,7 @@ def generate_prompt(data_point):
 
 def to_dschat(data_path):
     data = load_dataset("json", data_files=data_path)
-    new_data = data["train"].map(lambda x: {'prommpt' : generate_prompt(x), 'response' : '', 'chosen': '', 'rejected' : ''})
+    new_data = data["train"].map(lambda x: {'prompt' : generate_prompt(x), 'response' : '', 'chosen': '', 'rejected' : ''})
     return new_data
 
 if __name__ == "__main__":
