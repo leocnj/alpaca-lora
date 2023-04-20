@@ -7,30 +7,12 @@ CUTOFF_LEN = 256  # 256 accounts for about 96% of the data
 
 def generate_prompt(data_point):
     # sorry about the formatting disaster gotta move fast
-    if data_point["input"]:
-        return f"""Below is an instruction that describes a task, paired with an input that provides further context. Write a response that appropriately completes the request.
-
-### Instruction:
-{data_point["instruction"]}
-
-### Input:
-{data_point["input"]}
-
-### Response:
-{data_point["output"]}"""
-    else:
-        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
-
-### Instruction:
-{data_point["instruction"]}
-
-### Response:
-{data_point["output"]}"""
+    return f"Human: {data_point['instruction']} {data_point['input']} Assistant: {data_point['output']}"
 
 
 def to_dschat(data_path):
     data = load_dataset("json", data_files=data_path)
-    new_data = data["train"].map(lambda x: {'text' : generate_prompt(x)})
+    new_data = data["train"].map(lambda x: {'prommpt' : generate_prompt(x), 'response' : '', 'chosen': '', 'rejected' : ''})
     return new_data
 
 if __name__ == "__main__":
@@ -39,4 +21,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     ds2 = to_dschat(args.data_path)
-    print(ds2['text'][0:4])
+    ds2 = ds2.remove_columns(["instruction", "input", "output"])
+    print(ds2)
+    ds2.to_json("alpaca_dschat.json")
