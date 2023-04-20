@@ -7,3 +7,4 @@ minimal-llama**
 upload.py
 env/
 lora-alpaca/
+dev.ipynb
